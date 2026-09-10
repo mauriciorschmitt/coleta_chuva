@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chuva Útil — calculadora de aproveitamento de água de chuva</title>
+<meta name="description" content="Calculadora aberta de potencial de captação de água de chuva em coberturas, conforme ABNT NBR 15527. Volume captável, economia na conta de água, tamanho do reservatório e alívio da drenagem.">
+<meta property="og:title" content="Chuva Útil — calculadora de aproveitamento de água de chuva">
+<meta property="og:description" content="Descubra quanta água o seu telhado produz, quanto isso economiza e que tamanho de reservatório faz sentido.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9EDE9; --card:#F5F7F4;
+  --ink:#17251F; --ink2:#4E5F56; --ink3:#7A8A80;
+  --rule:#C6CFC7; --rule2:#DDE3DD;
+  --water:#10646E; --clay:#9E4B2D; --sun:#A8791F;
+  --sans:'Archivo',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+
+.mast{border-bottom:1px solid var(--rule);padding:32px 0 24px}
+.mast h1{font-size:clamp(30px,4.4vw,50px);line-height:1.02;margin:0 0 10px;font-weight:700;letter-spacing:-.025em}
+.mast .tag{margin:0;color:var(--ink2);max-width:64ch}
+.proj{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+.proj input{border:0;border-bottom:1px solid var(--rule);background:transparent;
+  font-family:var(--sans);font-size:13px;color:var(--ink2);padding:3px 2px;width:min(340px,70vw)}
+.proj input:focus{outline:0;border-bottom-color:var(--water);color:var(--ink)}
+.proj span{font-size:13px;color:var(--ink3);flex:0 0 auto}
+
+.hyeto{padding:28px 0 24px;border-bottom:1px solid var(--rule)}
+.hyeto-top{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+.hyeto-top h2{margin:0;font-size:17px;font-weight:600}
+.hyeto-top .sub{margin:5px 0 0;font-size:13px;color:var(--ink2);max-width:54ch}
+.pick{margin-top:10px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pick label{font-size:13px;color:var(--ink2)}
+select{font-family:var(--sans);font-size:13px;border:1px solid var(--rule);background:var(--card);
+  color:var(--ink);padding:5px 8px;border-radius:2px;max-width:100%}
+select:focus{outline:2px solid var(--water);outline-offset:1px}
+.yield{text-align:right;flex:0 0 auto}
+.yield b{display:block;font-family:var(--mono);font-size:clamp(30px,4vw,44px);font-weight:600;
+  line-height:1;color:var(--water);letter-spacing:-.02em}
+.yield span{display:block;font-size:12.5px;color:var(--ink2);margin-top:6px}
+.gauge{border-top:2px solid var(--ink);overflow-x:auto;padding-bottom:2px}
+.bars{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;align-items:start}
+.bar-col{display:flex;flex-direction:column;align-items:center}
+.bar-track{height:126px;width:100%;display:flex;justify-content:center}
+.bar{width:100%;max-width:44px;background:var(--water);transition:height .18s ease}
+.bar-m{font-size:11px;color:var(--ink3);margin:7px 0 4px}
+.bar-in{width:100%;max-width:52px;border:1px solid var(--rule);background:var(--card);
+  font-family:var(--mono);font-size:12px;text-align:center;padding:4px 2px;color:var(--ink);border-radius:2px}
+.bar-in:focus{outline:2px solid var(--water);outline-offset:1px;border-color:var(--water)}
+.gauge-foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:13px;
+  font-size:12.5px;color:var(--ink2)}
+
+.cols{display:grid;grid-template-columns:322px minmax(0,1fr);gap:40px;align-items:start;padding:32px 0 60px}
+.panel{position:sticky;min-width:0;top:18px;max-height:calc(100vh - 36px);overflow-y:auto;padding-right:6px}
+.panel::-webkit-scrollbar{width:8px}
+.panel::-webkit-scrollbar-thumb{background:var(--rule);border-radius:4px}
+fieldset{border:0;border-top:1px solid var(--rule);margin:0 0 20px;padding:13px 0 0}
+fieldset:first-of-type{border-top:0;padding-top:0}
+legend{font-size:12.5px;font-weight:600;color:var(--water);padding:0}
+.f{display:grid;grid-template-columns:1fr 80px 42px;gap:7px;align-items:center;margin:9px 0}
+.f label{font-size:13px;line-height:1.3;color:var(--ink2)}
+.f input{width:100%;border:1px solid var(--rule);background:var(--card);border-radius:2px;
+  font-family:var(--mono);font-size:12.5px;padding:6px 7px;text-align:right;color:var(--ink)}
+.f input:focus{outline:2px solid var(--water);outline-offset:1px;border-color:var(--water)}
+.f .u{font-size:10.5px;color:var(--ink3);font-family:var(--mono);text-align:left;line-height:1.1}
+.fsel{margin:9px 0}
+.fsel label{display:block;font-size:13px;color:var(--ink2);margin-bottom:4px}
+.fsel select{width:100%}
+.derived{font-size:12.5px;color:var(--ink2);border-left:2px solid var(--rule);padding:2px 0 2px 9px;margin:10px 0 0}
+.derived b{font-family:var(--mono);color:var(--ink);font-weight:600}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+button{font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--ink);
+  background:transparent;color:var(--ink);padding:7px 13px;border-radius:2px}
+button:hover{background:var(--ink);color:var(--paper)}
+button:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+button.solid{background:var(--water);border-color:var(--water);color:#fff}
+button.solid:hover{background:var(--ink);border-color:var(--ink)}
+
+.res{min-width:0}
+.res section{margin:0 0 44px}
+.res h2{font-size:20px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em;
+  padding-bottom:8px;border-bottom:2px solid var(--ink)}
+.res .lead{margin:12px 0 18px;color:var(--ink2);max-width:70ch}
+.res p{max-width:74ch}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:1px;
+  background:var(--rule2);border:1px solid var(--rule2);margin:0 0 18px}
+.kpi{background:var(--card);padding:14px 16px}
+.kpi b{display:block;font-family:var(--mono);font-size:24px;font-weight:600;line-height:1.15;letter-spacing:-.02em}
+.kpi span{display:block;font-size:12.5px;color:var(--ink2);margin-top:5px;line-height:1.35}
+.kpi.w b{color:var(--water)} .kpi.c b{color:var(--clay)}
+.split-bar{display:flex;height:42px;border:1px solid var(--ink);overflow:hidden;margin-top:20px}
+.split-used{background:var(--water)} .split-over{background:var(--clay)}
+.split-lab{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-top:9px;font-size:13px}
+.split-lab .l{display:flex;gap:8px;align-items:baseline}
+.swatch{width:11px;height:11px;flex:0 0 auto;position:relative;top:1px}
+.split-lab b{font-family:var(--mono);font-weight:600}
+.tscroll{overflow-x:auto;min-width:0;margin:6px 0 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--rule2)}
+th{font-size:11.5px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--rule);
+  vertical-align:bottom;line-height:1.25}
+td{font-family:var(--mono);font-size:12.5px}
+td:first-child,th:first-child{text-align:left}
+td:first-child{font-family:var(--sans);font-size:13px}
+tbody tr:hover{background:var(--card)}
+tfoot td{font-weight:600;border-top:1px solid var(--ink);border-bottom:0;background:var(--card)}
+.rowmark td{background:#DCE9E8} .rowmark td:first-child{font-weight:600}
+.note{border-left:3px solid var(--sun);background:var(--card);padding:11px 14px;margin:18px 0;
+  font-size:13.5px;color:var(--ink2);max-width:74ch}
+.note b{color:var(--ink)}
+.note.warn{border-left-color:var(--clay)} .note.ok{border-left-color:var(--water)}
+ul.tight{margin:8px 0 0;padding-left:19px;color:var(--ink2);font-size:13.5px;max-width:74ch}
+ul.tight li{margin:5px 0}
+footer{border-top:1px solid var(--rule);padding:24px 0 48px;font-size:13px;color:var(--ink2)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--paper);
+  padding:10px 18px;font-size:13.5px;border-radius:2px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+.toast.on{opacity:1}
+
+@media (max-width:940px){
+  .cols{grid-template-columns:minmax(0,1fr);gap:26px;padding-top:24px}
+  .panel{position:static;max-height:none;overflow:visible;border-bottom:1px solid var(--rule);padding-bottom:20px}
+}
+@media (max-width:620px){
+  .wrap{padding:0 16px}
+  .bars{gap:4px;min-width:560px}
+  .bar-track{height:104px} .bar-m{font-size:10px}
+  .yield{text-align:left}
+  .tscroll table{min-width:530px;font-size:12px}
+  .tscroll{border-bottom:1px solid var(--rule2)}
+  th,td{padding:5px 5px}
+  .kpi b{font-size:21px}
+  .f{grid-template-columns:1fr 72px 42px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  body{background:#fff}
+  .panel .acts,.bar-in,.pick{display:none}
+  .cols{grid-template-columns:1fr;padding:0}
+  .res section{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div class="proj">
+      <span>Estudo:</span>
+      <input id="nome" type="text" placeholder="dê um nome ao local" aria-label="Nome do estudo ou do local">
+    </div>
+    <h1>Chuva Útil</h1>
+    <p class="tag">Quanta água o seu telhado produz, quanto isso economiza na conta, que tamanho de reservatório faz sentido e o quanto alivia a drenagem. Cálculo conforme a ABNT NBR 15527. Serve para qualquer edificação, em qualquer lugar do Brasil.</p>
+  </header>
+
+  <div class="hyeto">
+    <div class="hyeto-top">
+      <div>
+        <h2>Chuva do lugar</h2>
+        <p class="sub">Escolha um perfil aproximado para começar e depois ajuste mês a mês com os dados da estação mais próxima.</p>
+        <div class="pick">
+          <label for="perfil">Perfil regional</label>
+          <select id="perfil"></select>
+        </div>
+      </div>
+      <div class="yield"><b id="kYield">–</b><span>litros por m² de telhado, por ano</span></div>
+    </div>
+    <div class="gauge"><div class="bars" id="bars"></div></div>
+    <div class="gauge-foot">
+      <span>Total anual: <b id="pTotal" style="font-family:var(--mono)">–</b> mm</span>
+      <span>Perfis são pontos de partida. Substitua pelas Normais Climatológicas do INMET.</span>
+    </div>
+  </div>
+
+  <div class="cols">
+    <form class="panel" id="panel" autocomplete="off">
+      <fieldset>
+        <legend>Cobertura</legend>
+        <div class="fsel">
+          <label for="mat">Material do telhado</label>
+          <select id="mat">
+            <option value="0.95">Metálica</option>
+            <option value="0.85">Fibrocimento</option>
+            <option value="0.80">Cerâmica</option>
+            <option value="0.85">Laje impermeabilizada</option>
+            <option value="">Personalizado</option>
+          </select>
+        </div>
+        <div class="f"><label for="A">Área de telhado, vista de cima</label><input type="number" id="A" step="1"><span class="u">m²</span></div>
+        <div class="f"><label for="C">Coeficiente de escoamento</label><input type="number" id="C" step="0.01"><span class="u">–</span></div>
+        <div class="f"><label for="eta">Eficiência do filtro e descarte</label><input type="number" id="eta" step="0.01"><span class="u">–</span></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Demanda não potável</legend>
+        <div class="f"><label for="pop">Pessoas no local</label><input type="number" id="pop"><span class="u">un</span></div>
+        <div class="f"><label for="lpd">Consumo não potável por pessoa</label><input type="number" id="lpd" step="1"><span class="u">L/dia</span></div>
+        <div class="f"><label for="dias">Dias de uso por ano</label><input type="number" id="dias"><span class="u">dias</span></div>
+        <div class="f"><label for="outros">Outros usos: limpeza, irrigação</label><input type="number" id="outros"><span class="u">m³/ano</span></div>
+        <p class="derived">Demanda total: <b id="dTot">–</b> m³/ano · <b id="dMes">–</b> m³/mês</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Reservatório e custo</legend>
+        <div class="f"><label for="Vres">Volume do reservatório</label><input type="number" id="Vres" step="1"><span class="u">m³</span></div>
+        <div class="f"><label for="cRes">Custo por m³ de reservatório</label><input type="number" id="cRes"><span class="u">R$/m³</span></div>
+        <div class="f"><label for="cFixo">Resto do sistema: calhas, filtros, bomba, rede</label><input type="number" id="cFixo"><span class="u">R$</span></div>
+        <div class="f"><label for="opex">Operação e manutenção</label><input type="number" id="opex"><span class="u">R$/ano</span></div>
+        <p class="derived">Investimento: <b id="dCapex">–</b></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tarifa de água</legend>
+        <div class="f"><label for="tar">Tarifa de água</label><input type="number" id="tar" step="0.01"><span class="u">R$/m³</span></div>
+        <div class="f"><label for="esg">Esgoto, fração sobre a água</label><input type="number" id="esg" step="0.05"><span class="u">–</span></div>
+        <p class="derived">Custo evitado: <b id="dCust">–</b> por m³</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Chuva forte, para drenagem</legend>
+        <div class="f"><label for="ii">Intensidade</label><input type="number" id="ii"><span class="u">mm/h</span></div>
+        <div class="f"><label for="dur">Duração</label><input type="number" id="dur"><span class="u">min</span></div>
+        <div class="f"><label for="Aasf">Área pavimentada, se houver</label><input type="number" id="Aasf"><span class="u">m²</span></div>
+        <div class="f"><label for="livre">Reservatório vazio quando a chuva chega</label><input type="number" id="livre" step="0.05"><span class="u">fração</span></div>
+      </fieldset>
+
+      <div class="acts">
+        <button type="button" class="solid" id="bShare">Copiar link</button>
+        <button type="button" id="bPrint">Imprimir</button>
+        <button type="button" id="bReset">Recomeçar</button>
+      </div>
+    </form>
+
+    <main class="res">
+
+      <section>
+        <h2>Quanta água dá para captar</h2>
+        <p class="lead">Um milímetro de chuva equivale a um litro por metro quadrado. O que o telhado entrega é esse total menos o que escorre fora, evapora e é descartado na primeira chuva.</p>
+        <div class="kpis">
+          <div class="kpi w"><b id="kAprov">–</b><span>m³ por ano aproveitáveis</span></div>
+          <div class="kpi"><b id="kBruto">–</b><span>m³ brutos que caem no telhado</span></div>
+          <div class="kpi"><b id="kDem">–</b><span>m³ por ano de demanda</span></div>
+          <div class="kpi"><b id="kRatio">–</b><span>vezes a demanda do local</span></div>
+        </div>
+        <div class="split-bar"><div class="split-used" id="sUsed"></div><div class="split-over" id="sOver"></div></div>
+        <div class="split-lab">
+          <span class="l"><i class="swatch" style="background:var(--water)"></i>Consumida: <b id="sUsedT">–</b></span>
+          <span class="l"><i class="swatch" style="background:var(--clay)"></i>Extravasa: <b id="sOverT">–</b></span>
+        </div>
+        <div class="note" id="noteGap"></div>
+      </section>
+
+      <section>
+        <h2>Mês a mês</h2>
+        <p class="lead">Simulação do reservatório pelo método do Anexo A da NBR 15527. O ano começa com o reservatório vazio, que é a hipótese conservadora.</p>
+        <div class="tscroll"><table>
+          <thead><tr><th>Mês</th><th>Chuva<br>mm</th><th>Captado<br>m³</th><th>Demanda<br>m³</th>
+            <th>Da chuva<br>m³</th><th>Da rede<br>m³</th><th>Extravasa<br>m³</th><th>Nível fim<br>m³</th></tr></thead>
+          <tbody id="tBal"></tbody><tfoot id="fBal"></tfoot>
+        </table></div>
+      </section>
+
+      <section>
+        <h2>Que reservatório comprar</h2>
+        <p class="lead">Reservatório grande quase nunca compensa. A tabela mostra o que se ganha de fato a cada degrau de volume, e onde para de valer a pena.</p>
+        <div class="tscroll"><table>
+          <thead><tr><th>Reservatório<br>m³</th><th>Demanda<br>atendida</th><th>Água<br>aproveitada</th>
+            <th>Economia<br>R$/ano</th><th>Investimento<br>R$</th><th>Retorno<br>anos</th></tr></thead>
+          <tbody id="tSweep"></tbody>
+        </table></div>
+        <div class="note" id="noteSweep"></div>
+        <div class="tscroll" style="margin-top:20px"><table>
+          <thead><tr><th>Método normativo</th><th>Volume<br>m³</th><th>Como é</th></tr></thead>
+          <tbody id="tDim"></tbody>
+        </table></div>
+      </section>
+
+      <section>
+        <h2>Quanto economiza</h2>
+        <p class="lead">Só vira dinheiro a água que substitui consumo real. O excedente não conta, por mais que o telhado produza.</p>
+        <div class="kpis">
+          <div class="kpi w"><b id="kEcon">–</b><span>economia líquida por ano</span></div>
+          <div class="kpi"><b id="kSubst">–</b><span>m³ por ano substituídos</span></div>
+          <div class="kpi"><b id="kPay">–</b><span>anos de retorno simples</span></div>
+          <div class="kpi"><b id="k20">–</b><span>saldo em 20 anos</span></div>
+        </div>
+        <div class="note" id="noteEcon"></div>
+      </section>
+
+      <section>
+        <h2>Alívio da drenagem</h2>
+        <p class="lead">Alagamento é problema de vazão de pico, não de volume anual. Pelo método racional, com a chuva forte definida ao lado, é isto que a edificação despeja hoje na rede.</p>
+        <div class="kpis">
+          <div class="kpi c"><b id="kQtot">–</b><span>L/s no pico</span></div>
+          <div class="kpi"><b id="kVev">–</b><span>m³ no evento inteiro</span></div>
+          <div class="kpi"><b id="kRet">–</b><span>m³ que a cisterna retém</span></div>
+        </div>
+        <div class="note warn" id="noteDren"></div>
+        <p>No ano, <b id="dAnual">–</b> m³ deixam de chegar à galeria porque foram consumidos no local, o que é <b id="dAnualP">–</b> de tudo que hoje escorre do telhado direto para a rede.</p>
+      </section>
+
+      <section>
+        <h2>O que checar antes de decidir</h2>
+        <ul class="tight">
+          <li>Chuva: troque o perfil regional pelas Normais Climatológicas 1991–2020 do INMET da estação mais próxima. É a entrada que mais muda o resultado.</li>
+          <li>Área: use a projeção horizontal do telhado, a sombra dele vista de cima. Área inclinada superestima a captação.</li>
+          <li>Tarifa: pegue o R$/m³ da conta de água real, com a parcela de esgoto. Tarifa baixa alonga muito o retorno.</li>
+          <li>Custo: cote o reservatório e a rede predial localmente. Em reforma, a rede dupla costuma custar mais que o reservatório.</li>
+          <li>Chuva forte: substitua a intensidade pela equação IDF do município, com tempo de retorno de 5 ou 10 anos.</li>
+          <li>Norma: a NBR 5626 exige separação total entre a rede de água de chuva e a de água potável, sem nenhuma interligação.</li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <p>Ferramenta aberta, em arquivo único e sem dependências. Os cálculos rodam no seu navegador e nada é enviado a servidor algum. Copie, adapte e use onde precisar.</p>
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+var MESESL=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+var PERFIS=[
+ {n:'Sul — planalto (Curitiba, Planalto Norte SC)', p:[175,160,130,100,105,110,105,95,150,165,130,145]},
+ {n:'Sul — litoral (Florianópolis, Porto Alegre)',  p:[190,190,175,120,105,90,105,110,140,150,140,165]},
+ {n:'Sudeste — São Paulo e interior paulista',      p:[240,215,175,80,70,55,45,40,80,130,145,205]},
+ {n:'Sudeste — Rio de Janeiro e litoral',           p:[140,130,130,95,70,50,40,45,60,90,110,150]},
+ {n:'Sudeste — Belo Horizonte e Minas central',     p:[300,180,165,60,25,10,10,15,50,120,220,340]},
+ {n:'Centro-Oeste — Brasília, Goiás, Mato Grosso',  p:[245,215,190,100,25,8,10,15,55,155,235,270]},
+ {n:'Nordeste — litoral leste (Recife, Salvador)',  p:[90,120,220,290,320,340,280,180,80,40,35,60]},
+ {n:'Nordeste — semiárido (sertão)',                p:[80,90,90,45,15,5,3,2,6,25,55,85]},
+ {n:'Norte — Manaus e Amazônia central',            p:[270,265,310,300,255,120,90,60,80,130,175,225]},
+ {n:'Norte — Belém e litoral amazônico',            p:[350,410,435,370,300,180,160,130,120,110,110,215]},
+ {n:'Personalizado', p:null}
+];
+
+var DEF={nome:'', perfil:0, A:1000, C:0.85, eta:0.85,
+  pop:200, lpd:12, dias:250, outros:0,
+  Vres:20, cRes:700, cFixo:18000, opex:600,
+  tar:8.00, esg:0.80,
+  ii:60, dur:60, Aasf:0, livre:0.50,
+  P:PERFIS[0].p.slice()};
+var NUMK=['A','C','eta','pop','lpd','dias','outros','Vres','cRes','cFixo','opex','tar','esg','ii','dur','Aasf','livre'];
+var S=JSON.parse(JSON.stringify(DEF));
+
+var nf=function(n,d){return new Intl.NumberFormat('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);};
+var n0=function(n){return nf(n,0);}, n1=function(n){return nf(n,1);}, n2=function(n){return nf(n,2);};
+var brl=function(n){return 'R$ '+nf(Math.round(n),0);};
+var pct=function(n){return nf(n*100,1)+'%';};
+var $=function(id){return document.getElementById(id);};
+
+/* barras */
+var barsEl=$('bars');
+MESES.forEach(function(m,i){
+  var col=document.createElement('div'); col.className='bar-col';
+  col.innerHTML='<div class="bar-track"><div class="bar" data-b="'+i+'"></div></div>'+
+    '<div class="bar-m">'+m+'</div>'+
+    '<input class="bar-in" type="number" min="0" data-p="'+i+'" aria-label="Chuva de '+MESESL[i]+' em milímetros">';
+  barsEl.appendChild(col);
+});
+/* perfis */
+PERFIS.forEach(function(pf,i){
+  var o=document.createElement('option'); o.value=i; o.textContent=pf.n; $('perfil').appendChild(o);
+});
+
+function simulate(sup,dem,V){
+  var lvl=0,rows=[],tU=0,tR=0,tX=0;
+  for(var i=0;i<12;i++){
+    var ini=lvl, disp=ini+sup[i];
+    var usado=Math.min(dem[i],disp);
+    var rede=dem[i]-usado;
+    var after=disp-usado;
+    var fim=Math.min(after,V);
+    var ext=after-fim;
+    lvl=fim; tU+=usado; tR+=rede; tX+=ext;
+    rows.push({usado:usado,rede:rede,ext:ext,fim:fim});
+  }
+  return {rows:rows,usado:tU,rede:tR,ext:tX};
+}
+
+function model(s){
+  var Pano=s.P.reduce(function(a,b){return a+b;},0);
+  var bruto=s.P.map(function(p){return s.A*p/1000;});
+  var aprov=bruto.map(function(v){return v*s.C*s.eta;});
+  var brutoT=bruto.reduce(function(a,b){return a+b;},0);
+  var aprovT=aprov.reduce(function(a,b){return a+b;},0);
+  var dTot=s.pop*s.lpd*s.dias/1000 + s.outros;
+  var dem=[]; for(var i=0;i<12;i++) dem.push(dTot/12);
+  var sim=simulate(aprov,dem,s.Vres);
+  var custo=s.tar*(1+s.esg);
+  var capex=s.Vres*s.cRes+s.cFixo;
+  var liq=sim.usado*custo-s.opex;
+  var pay=liq>0?capex/liq:Infinity;
+  var hmm=s.ii*s.dur/60;
+  var Q=(0.95*s.ii*s.A+0.90*s.ii*s.Aasf)/3600;
+  var Vtel=hmm*s.A*0.95/1000, Vasf=hmm*s.Aasf*0.90/1000;
+  var livreV=s.Vres*s.livre, retido=Math.min(livreV,Vtel);
+  return {Pano:Pano,aprov:aprov,brutoT:brutoT,aprovT:aprovT,dTot:dTot,dem:dem,sim:sim,
+    custo:custo,capex:capex,liq:liq,pay:pay,hmm:hmm,Q:Q,Vev:Vtel+Vasf,retido:retido,
+    rend:s.A>0?aprovT*1000/s.A:0};
+}
+function atV(s,m,V){
+  var sim=simulate(m.aprov,m.dem,V);
+  var capex=V*s.cRes+s.cFixo;
+  var liq=sim.usado*m.custo-s.opex;
+  return {V:V,capex:capex,liq:liq,pay:liq>0?capex/liq:Infinity,
+    atend:m.dTot>0?sim.usado/m.dTot:0, aprov:m.aprovT>0?sim.usado/m.aprovT:0};
+}
+
+function render(){
+  var s=S, m=model(s);
+  var pmax=Math.max.apply(null,s.P.concat([1]));
+  Array.prototype.forEach.call(document.querySelectorAll('[data-b]'),function(el){
+    el.style.height=(Math.max(s.P[+el.dataset.b],0)/pmax*100)+'%';
+  });
+  $('pTotal').textContent=n0(m.Pano);
+  $('kYield').textContent=n0(m.rend);
+
+  $('dTot').textContent=n0(m.dTot);
+  $('dMes').textContent=n1(m.dTot/12);
+  $('dCapex').textContent=brl(m.capex);
+  $('dCust').textContent='R$ '+n2(m.custo);
+
+  $('kAprov').textContent=n0(m.aprovT);
+  $('kBruto').textContent=n0(m.brutoT);
+  $('kDem').textContent=n0(m.dTot);
+  $('kRatio').textContent=m.dTot>0?n1(m.aprovT/m.dTot)+'×':'—';
+
+  var tot=Math.max(m.sim.usado+m.sim.ext,1);
+  $('sUsed').style.width=(m.sim.usado/tot*100)+'%';
+  $('sOver').style.width=(m.sim.ext/tot*100)+'%';
+  $('sUsedT').textContent=n0(m.sim.usado)+' m³ ('+pct(m.sim.usado/tot)+')';
+  $('sOverT').textContent=n0(m.sim.ext)+' m³ ('+pct(m.sim.ext/tot)+')';
+
+  var atend=m.dTot>0?m.sim.usado/m.dTot:0, g=$('noteGap');
+  if(m.dTot<=0){
+    g.className='note'; g.innerHTML='Informe a demanda ao lado para ver quanto dessa água tem para onde ir.';
+  }else if(m.aprovT>m.dTot*1.2){
+    g.className='note ok';
+    g.innerHTML='<b>O limite aqui não é o telhado, é o consumo.</b> A cobertura produz '+n1(m.aprovT/m.dTot)+
+      ' vezes toda a demanda não potável e cobre '+pct(atend)+' dela. Ampliar a captação não gera mais economia: '+
+      'o ganho adicional passa a ser de drenagem.';
+  }else if(m.aprovT<m.dTot*0.6){
+    g.className='note warn';
+    g.innerHTML='<b>O telhado é o gargalo.</b> A cobertura cobre '+pct(atend)+' da demanda. '+
+      'Vale checar se há outras coberturas para somar, ou reduzir o escopo de usos que a chuva vai atender.';
+  }else{
+    g.className='note';
+    g.innerHTML='A cobertura atende '+pct(atend)+' da demanda não potável. Oferta e consumo estão próximos, '+
+      'que é a faixa em que o sistema costuma render melhor por real investido.';
+  }
+
+  var h='';
+  m.sim.rows.forEach(function(r,i){
+    h+='<tr><td>'+MESESL[i]+'</td><td>'+n0(s.P[i])+'</td><td>'+n0(m.aprov[i])+'</td><td>'+n0(m.dem[i])+
+       '</td><td>'+n0(r.usado)+'</td><td>'+n0(r.rede)+'</td><td>'+n0(r.ext)+'</td><td>'+n0(r.fim)+'</td></tr>';
+  });
+  $('tBal').innerHTML=h;
+  $('fBal').innerHTML='<tr><td>Ano</td><td>'+n0(m.Pano)+'</td><td>'+n0(m.aprovT)+'</td><td>'+n0(m.dTot)+
+    '</td><td>'+n0(m.sim.usado)+'</td><td>'+n0(m.sim.rede)+'</td><td>'+n0(m.sim.ext)+'</td><td>—</td></tr>';
+
+  /* varredura proporcional ao porte, para servir de casa a galpão */
+  var base=Math.max(m.dTot/12,1);
+  var mult=[0.25,0.5,0.75,1,1.5,2,3,5,8];
+  var seen={}, sweep=[];
+  mult.forEach(function(k){
+    var V=Math.max(1,Math.round(base*k));
+    if(!seen[V]){seen[V]=1;sweep.push(V);}
+  });
+  if(!seen[Math.round(s.Vres)]&&s.Vres>0){sweep.push(Math.round(s.Vres));sweep.sort(function(a,b){return a-b;});}
+  var sw='',best=null;
+  sweep.forEach(function(V){
+    var r=atV(s,m,V);
+    if(best===null||r.pay<best.pay) best=r;
+    sw+='<tr'+(V===Math.round(s.Vres)?' class="rowmark"':'')+'><td>'+n0(V)+'</td><td>'+pct(r.atend)+
+      '</td><td>'+pct(r.aprov)+'</td><td>'+brl(r.liq)+'</td><td>'+brl(r.capex)+'</td><td>'+
+      (isFinite(r.pay)?n1(r.pay):'não paga')+'</td></tr>';
+  });
+  $('tSweep').innerHTML=sw;
+  $('noteSweep').innerHTML='A linha destacada é o volume que você definiu. Nesta configuração o melhor retorno está em <b>'+
+    n0(best.V)+' m³</b>, com '+(isFinite(best.pay)?n1(best.pay)+' anos':'retorno indefinido')+' e '+pct(best.atend)+
+    ' da demanda atendida. Passado esse ponto, aumentar o reservatório só aumenta o investimento.';
+
+  var vIng=0.05*m.Pano*s.A/1000;
+  var vAle=Math.min(0.06*m.aprovT,0.06*m.dTot);
+  var vAze=0.042*m.Pano*s.A*2/1000;
+  $('tDim').innerHTML=
+    '<tr><td>Prático inglês</td><td>'+n0(vIng)+'</td><td style="text-align:left;font-family:var(--sans)">V = 0,05 × P × A. Simples, tende a superdimensionar.</td></tr>'+
+    '<tr><td>Prático alemão</td><td>'+n0(vAle)+'</td><td style="text-align:left;font-family:var(--sans)">6% do menor entre oferta e demanda. Costuma dar o mais econômico.</td></tr>'+
+    '<tr><td>Azevedo Neto</td><td>'+n0(vAze)+'</td><td style="text-align:left;font-family:var(--sans)">V = 0,042 × P × A × T, com T = 2 meses de pouca chuva.</td></tr>';
+
+  $('kEcon').textContent=brl(m.liq);
+  $('kSubst').textContent=n0(m.sim.usado);
+  $('kPay').textContent=isFinite(m.pay)?n1(m.pay):'—';
+  $('k20').textContent=brl(m.liq*20-m.capex);
+
+  var ne=$('noteEcon');
+  if(!isFinite(m.pay)){
+    ne.className='note warn';
+    ne.innerHTML='<b>Não há economia com estes números.</b> O custo de operação supera o valor da água substituída. '+
+      'Confira a tarifa, a demanda e o custo anual de manutenção.';
+  }else if(m.pay>15){
+    ne.className='note warn';
+    ne.innerHTML='<b>Retorno longo:</b> '+n1(m.pay)+' anos. Nesse patamar o sistema não se paga só pela conta de água. '+
+      'Vale somar o alívio da drenagem e a segurança em estiagem, reduzir o escopo, ou rever o orçamento da rede predial, '+
+      'que costuma ser o item mais pesado em reforma.';
+  }else if(m.pay>8){
+    ne.className='note';
+    ne.innerHTML='Retorno de '+n1(m.pay)+' anos, dentro da vida útil típica do sistema, que é de 20 a 30 anos. '+
+      'Vale cotar a rede predial antes de fechar o número.';
+  }else{
+    ne.className='note ok';
+    ne.innerHTML='Retorno de '+n1(m.pay)+' anos, curto frente aos 20 a 30 anos de vida útil do sistema. '+
+      'Confirme a tarifa real e o orçamento antes de tratar como definitivo.';
+  }
+
+  $('kQtot').textContent=n0(m.Q);
+  $('kVev').textContent=n0(m.Vev);
+  $('kRet').textContent=n0(m.retido);
+  $('noteDren').innerHTML='<b>Cisterna cheia não amortece nada.</b> O número acima supõe o reservatório '+pct(s.livre)+
+    ' vazio quando a chuva chega, e essa é a hipótese mais frágil de qualquer estudo desse tipo. Para garantir o efeito, '+
+    'divida o reservatório em duas faixas: a de baixo armazena para uso, a de cima fica vazia e esvazia devagar por um '+
+    'orifício de fundo depois da chuva.';
+  $('dAnual').textContent=n0(m.sim.usado);
+  $('dAnualP').textContent=pct(m.sim.usado/Math.max(m.brutoT,1));
+
+  document.title=(S.nome?S.nome+' — ':'')+'Chuva Útil';
+}
+
+function syncMat(){
+  var sel=$('mat'), hit=-1;
+  for(var i=0;i<sel.options.length-1;i++){ if(parseFloat(sel.options[i].value)===S.C){hit=i;break;} }
+  sel.selectedIndex=hit>=0?hit:sel.options.length-1;
+}
+function syncPerfil(){
+  var i=PERFIS.findIndex(function(pf){
+    return pf.p && pf.p.every(function(v,k){return v===S.P[k];});
+  });
+  $('perfil').value=(i>=0?i:PERFIS.length-1);
+}
+function fill(){
+  NUMK.forEach(function(k){var el=$(k); if(el) el.value=S[k];});
+  $('nome').value=S.nome||'';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-p]'),function(el){el.value=S.P[+el.dataset.p];});
+  syncMat(); syncPerfil();
+}
+function bind(){
+  NUMK.forEach(function(k){
+    var el=$(k); if(!el) return;
+    el.addEventListener('input',function(){
+      var v=parseFloat(el.value); S[k]=isNaN(v)?0:v;
+      if(k==='C') syncMat();
+      render();
+    });
+  });
+  $('nome').addEventListener('input',function(){S.nome=$('nome').value;render();});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-p]'),function(el){
+    el.addEventListener('input',function(){
+      var v=parseFloat(el.value); S.P[+el.dataset.p]=isNaN(v)?0:Math.max(v,0);
+      syncPerfil(); render();
+    });
+  });
+  $('mat').addEventListener('change',function(){
+    var v=parseFloat($('mat').value);
+    if(!isNaN(v)){ S.C=v; $('C').value=v; render(); }
+  });
+  $('perfil').addEventListener('change',function(){
+    var pf=PERFIS[+$('perfil').value];
+    if(pf && pf.p){ S.P=pf.p.slice(); fill(); render(); }
+  });
+}
+
+function encode(){
+  var o={nome:S.nome,P:S.P};
+  NUMK.forEach(function(k){o[k]=S[k];});
+  return btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+}
+function decode(){
+  try{
+    var raw=location.hash.replace(/^#d=/,''); if(!raw) return;
+    var o=JSON.parse(decodeURIComponent(escape(atob(raw))));
+    NUMK.forEach(function(k){ if(typeof o[k]==='number') S[k]=o[k]; });
+    if(typeof o.nome==='string') S.nome=o.nome;
+    if(Array.isArray(o.P)&&o.P.length===12) S.P=o.P.map(Number);
+  }catch(e){}
+}
+function toast(msg){
+  var t=$('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('on');},2200);
+}
+$('bShare').addEventListener('click',function(){
+  var hash='#d='+encode();
+  history.replaceState(null,'',hash);
+  var url=location.origin+location.pathname+hash;
+  var ok=function(){toast('Link copiado. Ele abre com exatamente estes valores.');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(ok,function(){prompt('Copie o link:',url);});
+  }else{prompt('Copie o link:',url);}
+});
+$('bPrint').addEventListener('click',function(){window.print();});
+$('bReset').addEventListener('click',function(){
+  S=JSON.parse(JSON.stringify(DEF));
+  history.replaceState(null,'',location.pathname);
+  fill(); render(); toast('Valores iniciais restaurados.');
+});
+
+decode(); fill(); bind(); render();
+})();
+</script>
+</body>
+</html>
