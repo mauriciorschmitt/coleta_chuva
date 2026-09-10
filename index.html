@@ -139,12 +139,36 @@ footer{border-top:1px solid var(--rule);padding:24px 0 48px;font-size:13px;color
   .kpi b{font-size:21px}
   .f{grid-template-columns:1fr 72px 42px}
 }
+details.sub{margin:4px 0 2px;border-left:2px solid var(--rule2);padding-left:10px}
+details.sub>summary{font-size:12px;color:var(--water);cursor:pointer;list-style:none;padding:3px 0;font-weight:500}
+details.sub>summary::-webkit-details-marker{display:none}
+details.sub>summary::before{content:'\25B8  ';font-size:9px}
+details.sub[open]>summary::before{content:'\25BE  '}
+details.sub>summary:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+details.sub .f{margin:7px 0}
+details.sub .f label{font-size:12px}
+details.sub .fsel label{font-size:12px}
+.subres{font-size:12px;color:var(--ink2);margin:9px 0 5px;padding:6px 9px;background:var(--card);border-left:2px solid var(--water)}
+.subres b{font-family:var(--mono);color:var(--ink);font-weight:600}
+.printonly{display:none}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media print{
-  body{background:#fff}
-  .panel .acts,.bar-in,.pick{display:none}
-  .cols{grid-template-columns:1fr;padding:0}
-  .res section{break-inside:avoid}
+  @page{margin:16mm}
+  body{background:#fff;font-size:11pt}
+  .panel,.bar-in,.pick,.proj span,.toast{display:none}
+  .printonly{display:block}
+  .proj input{border:0;font-size:15px;font-weight:500;color:var(--ink);width:100%;padding-left:0}
+  .cols{grid-template-columns:1fr;padding:0;gap:0}
+  .mast{padding-top:0}
+  .res section{break-inside:avoid;margin-bottom:26px}
+  .res h2{break-after:avoid}
+  .kpi,.bar,.split-used,.split-over,.rowmark td,tfoot td,.note{
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tscroll{overflow:visible}
+  .gauge{overflow:visible}
+  .prem{break-inside:avoid}
+  footer{border-top:1px solid var(--rule);font-size:10pt}
 }
 </style>
 </head>
@@ -179,6 +203,12 @@ footer{border-top:1px solid var(--rule);padding:24px 0 48px;font-size:13px;color
     </div>
   </div>
 
+  <section class="printonly prem">
+    <h2 style="font-size:18px;font-weight:600;margin:26px 0 4px;padding-bottom:8px;border-bottom:2px solid var(--ink)">Premissas do estudo</h2>
+    <p style="color:var(--ink2);font-size:13px;margin:10px 0 4px" id="prData"></p>
+    <div class="tscroll"><table><tbody id="prPrem"></tbody></table></div>
+  </section>
+
   <div class="cols">
     <form class="panel" id="panel" autocomplete="off">
       <fieldset>
@@ -202,8 +232,49 @@ footer{border-top:1px solid var(--rule);padding:24px 0 48px;font-size:13px;color
         <legend>Demanda não potável</legend>
         <div class="f"><label for="pop">Pessoas no local</label><input type="number" id="pop"><span class="u">un</span></div>
         <div class="f"><label for="lpd">Consumo não potável por pessoa</label><input type="number" id="lpd" step="1"><span class="u">L/dia</span></div>
+        <details class="sub">
+          <summary>não sei, calcular</summary>
+          <div class="fsel">
+            <label for="tipoEdif">Tipo de edificação</label>
+            <select id="tipoEdif">
+              <option value="5">Residência, permanência integral</option>
+              <option value="2">Escola ou universidade</option>
+              <option value="3">Escritório</option>
+              <option value="1.5">Comércio ou loja</option>
+              <option value="2.5">Galpão ou indústria</option>
+              <option value="">Personalizado</option>
+            </select>
+          </div>
+          <div class="f"><label for="descDia">Descargas por pessoa por dia</label><input type="number" id="descDia" step="0.5"><span class="u">un</span></div>
+          <div class="fsel">
+            <label for="tipoBacia">Bacia sanitária</label>
+            <select id="tipoBacia">
+              <option value="6">Caixa acoplada comum</option>
+              <option value="4.5">Dual flush, média</option>
+              <option value="9">Caixa antiga</option>
+              <option value="10">Válvula de descarga</option>
+              <option value="">Personalizado</option>
+            </select>
+          </div>
+          <div class="f"><label for="lDesc">Volume por descarga</label><input type="number" id="lDesc" step="0.5"><span class="u">L</span></div>
+          <div class="f"><label for="mictUso">Usos de mictório por pessoa, por dia</label><input type="number" id="mictUso" step="0.5"><span class="u">un</span></div>
+          <div class="f"><label for="lMict">Volume por uso do mictório</label><input type="number" id="lMict" step="0.5"><span class="u">L</span></div>
+          <p class="subres">Dá <b id="subLpd">–</b> L por pessoa por dia, já aplicado acima.</p>
+        </details>
         <div class="f"><label for="dias">Dias de uso por ano</label><input type="number" id="dias"><span class="u">dias</span></div>
-        <div class="f"><label for="outros">Outros usos: limpeza, irrigação</label><input type="number" id="outros"><span class="u">m³/ano</span></div>
+        <div class="f"><label for="outros">Outros usos: limpeza, irrigação</label><input type="number" id="outros" step="1"><span class="u">m³/ano</span></div>
+        <details class="sub">
+          <summary>não sei, calcular</summary>
+          <div class="f"><label for="limpArea">Área de piso lavável</label><input type="number" id="limpArea"><span class="u">m²</span></div>
+          <div class="f"><label for="limpCons">Água na limpeza de piso</label><input type="number" id="limpCons" step="0.5"><span class="u">L/m²·mês</span></div>
+          <div class="f"><label for="irrigArea">Área irrigada</label><input type="number" id="irrigArea"><span class="u">m²</span></div>
+          <div class="f"><label for="irrigLam">Lâmina de irrigação</label><input type="number" id="irrigLam" step="0.5"><span class="u">L/m²·dia</span></div>
+          <div class="f"><label for="irrigDias">Dias de irrigação por ano</label><input type="number" id="irrigDias"><span class="u">dias</span></div>
+          <div class="f"><label for="veicMes">Veículos lavados por mês</label><input type="number" id="veicMes"><span class="u">un</span></div>
+          <div class="f"><label for="veicL">Água por lavagem</label><input type="number" id="veicL"><span class="u">L</span></div>
+          <div class="f"><label for="outrosExtra">Outros usos já conhecidos</label><input type="number" id="outrosExtra"><span class="u">m³/ano</span></div>
+          <p class="subres">Dá <b id="subOutros">–</b> m³/ano: limpeza <b id="subLimp">–</b> · irrigação <b id="subIrr">–</b> · veículos <b id="subVeic">–</b>. Já aplicado acima.</p>
+        </details>
         <p class="derived">Demanda total: <b id="dTot">–</b> m³/ano · <b id="dMes">–</b> m³/mês</p>
       </fieldset>
 
@@ -233,7 +304,7 @@ footer{border-top:1px solid var(--rule);padding:24px 0 48px;font-size:13px;color
 
       <div class="acts">
         <button type="button" class="solid" id="bShare">Copiar link</button>
-        <button type="button" id="bPrint">Imprimir</button>
+        <button type="button" id="bPrint">Imprimir relatório</button>
         <button type="button" id="bReset">Recomeçar</button>
       </div>
     </form>
@@ -347,13 +418,18 @@ var PERFIS=[
  {n:'Personalizado', p:null}
 ];
 
-var DEF={nome:'', perfil:0, A:1000, C:0.85, eta:0.85,
+var DEF={nome:'', A:1000, C:0.85, eta:0.85,
   pop:200, lpd:12, dias:250, outros:0,
+  descDia:2, lDesc:6, mictUso:0, lMict:1,
+  limpArea:0, limpCons:2, irrigArea:0, irrigLam:3, irrigDias:120, veicMes:0, veicL:60, outrosExtra:0,
   Vres:20, cRes:700, cFixo:18000, opex:600,
   tar:8.00, esg:0.80,
   ii:60, dur:60, Aasf:0, livre:0.50,
   P:PERFIS[0].p.slice()};
-var NUMK=['A','C','eta','pop','lpd','dias','outros','Vres','cRes','cFixo','opex','tar','esg','ii','dur','Aasf','livre'];
+var SUB1=['descDia','lDesc','mictUso','lMict'];
+var SUB2=['limpArea','limpCons','irrigArea','irrigLam','irrigDias','veicMes','veicL','outrosExtra'];
+var NUMK=['A','C','eta','pop','lpd','dias','outros','Vres','cRes','cFixo','opex','tar','esg','ii','dur','Aasf','livre']
+  .concat(SUB1).concat(SUB2);
 var S=JSON.parse(JSON.stringify(DEF));
 
 var nf=function(n,d){return new Intl.NumberFormat('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);};
@@ -537,9 +613,71 @@ function render(){
   $('dAnual').textContent=n0(m.sim.usado);
   $('dAnualP').textContent=pct(m.sim.usado/Math.max(m.brutoT,1));
 
+  paintSub();
   document.title=(S.nome?S.nome+' — ':'')+'Chuva Útil';
+
+  var hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  $('prData').textContent=(S.nome?S.nome+' · ':'')+'relatório gerado em '+hoje;
+  var prem=[
+    ['Cobertura','Área de telhado, projeção horizontal',n0(s.A)+' m²'],
+    ['','Coeficiente de escoamento',n2(s.C)],
+    ['','Eficiência do filtro e descarte',n2(s.eta)],
+    ['Chuva','Precipitação anual',n0(m.Pano)+' mm'],
+    ['','Mês mais seco / mais chuvoso',n0(Math.min.apply(null,s.P))+' / '+n0(Math.max.apply(null,s.P))+' mm'],
+    ['Demanda','Pessoas no local',n0(s.pop)],
+    ['','Consumo não potável por pessoa',n1(s.lpd)+' L/dia'],
+    ['','Dias de uso por ano',n0(s.dias)],
+    ['','Outros usos',n1(s.outros)+' m³/ano'],
+    ['','Demanda total',n0(m.dTot)+' m³/ano'],
+    ['Sistema','Volume do reservatório',n0(s.Vres)+' m³'],
+    ['','Custo por m³ de reservatório','R$ '+n0(s.cRes)],
+    ['','Resto do sistema',brl(s.cFixo)],
+    ['','Investimento total',brl(m.capex)],
+    ['','Operação e manutenção',brl(s.opex)+'/ano'],
+    ['Tarifa','Água','R$ '+n2(s.tar)+'/m³'],
+    ['','Esgoto sobre a água',pct(s.esg)],
+    ['','Custo evitado','R$ '+n2(m.custo)+'/m³'],
+    ['Chuva forte','Intensidade',n0(s.ii)+' mm/h'],
+    ['','Duração',n0(s.dur)+' min'],
+    ['','Área pavimentada',n0(s.Aasf)+' m²'],
+    ['','Reservatório vazio na chegada da chuva',pct(s.livre)]
+  ];
+  $('prPrem').innerHTML=prem.map(function(r){
+    return '<tr><td style="width:18%;font-weight:'+(r[0]?'600':'400')+'">'+r[0]+
+           '</td><td style="text-align:left;font-family:var(--sans);font-size:13px">'+r[1]+
+           '</td><td style="width:22%">'+r[2]+'</td></tr>';
+  }).join('');
 }
 
+function subCalc(){
+  var lpd=S.descDia*S.lDesc + S.mictUso*S.lMict;
+  var limp=S.limpArea*S.limpCons*12/1000;
+  var irr=S.irrigArea*S.irrigLam*S.irrigDias/1000;
+  var vei=S.veicMes*S.veicL*12/1000;
+  var outros=limp+irr+vei+S.outrosExtra;
+  return {lpd:lpd, outros:outros, limp:limp, irr:irr, vei:vei};
+}
+function applySub(which){
+  var r=subCalc();
+  var tidy=function(x){return String(Math.round(x*10)/10);};
+  if(which===1){ S.lpd=r.lpd; $('lpd').value=tidy(r.lpd); }
+  else{ S.outros=r.outros; $('outros').value=tidy(r.outros); }
+}
+function paintSub(){
+  var r=subCalc();
+  $('subLpd').textContent=n1(r.lpd);
+  $('subOutros').textContent=n1(r.outros);
+  $('subLimp').textContent=n1(r.limp);
+  $('subIrr').textContent=n1(r.irr);
+  $('subVeic').textContent=n1(r.vei);
+}
+function syncSel(id,key){
+  var sel=$(id), hit=-1;
+  for(var i=0;i<sel.options.length-1;i++){
+    if(sel.options[i].value!=='' && parseFloat(sel.options[i].value)===S[key]){hit=i;break;}
+  }
+  sel.selectedIndex=hit>=0?hit:sel.options.length-1;
+}
 function syncMat(){
   var sel=$('mat'), hit=-1;
   for(var i=0;i<sel.options.length-1;i++){ if(parseFloat(sel.options[i].value)===S.C){hit=i;break;} }
@@ -556,6 +694,8 @@ function fill(){
   $('nome').value=S.nome||'';
   Array.prototype.forEach.call(document.querySelectorAll('[data-p]'),function(el){el.value=S.P[+el.dataset.p];});
   syncMat(); syncPerfil();
+  syncSel('tipoEdif','descDia'); syncSel('tipoBacia','lDesc');
+  paintSub();
 }
 function bind(){
   NUMK.forEach(function(k){
@@ -571,6 +711,22 @@ function bind(){
     el.addEventListener('input',function(){
       var v=parseFloat(el.value); S.P[+el.dataset.p]=isNaN(v)?0:Math.max(v,0);
       syncPerfil(); render();
+    });
+  });
+  SUB1.concat(SUB2).forEach(function(k){
+    var el=$(k); if(!el) return;
+    el.addEventListener('input',function(){
+      var v=parseFloat(el.value); S[k]=isNaN(v)?0:v;
+      if(k==='descDia') syncSel('tipoEdif','descDia');
+      if(k==='lDesc') syncSel('tipoBacia','lDesc');
+      applySub(SUB1.indexOf(k)>=0?1:2);
+      paintSub(); render();
+    });
+  });
+  [['tipoEdif','descDia',1],['tipoBacia','lDesc',1]].forEach(function(t){
+    $(t[0]).addEventListener('change',function(){
+      var v=parseFloat($(t[0]).value);
+      if(!isNaN(v)){ S[t[1]]=v; $(t[1]).value=v; applySub(1); paintSub(); render(); }
     });
   });
   $('mat').addEventListener('change',function(){
